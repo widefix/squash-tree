@@ -90,19 +90,37 @@ func (nr *NotesReader) CommitExists(commitHash string) bool {
 	return err == nil
 }
 
+func getCommitMessage(repoPath, ref string) (string, error) {
+	cmd := exec.Command("git", "log", "-1", "--format=%s", ref)
+	if repoPath != "" {
+		cmd.Dir = repoPath
+	}
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("git log: %w", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 func WriteMetadata(repoPath, rootShortHash, baseShortHash string, children []string, strategy string) error {
 	if len(children) == 0 {
 		return fmt.Errorf("at least one child commit required")
 	}
+
+	rootMessage, _ := getCommitMessage(repoPath, rootShortHash)
+
 	childCommits := make([]metadata.ChildCommit, len(children))
 	for i, h := range children {
-		childCommits[i] = metadata.ChildCommit{Hash: h, Order: i + 1}
+		msg, _ := getCommitMessage(repoPath, h)
+		childCommits[i] = metadata.ChildCommit{Hash: h, Order: i + 1, Message: msg}
 	}
+
 	meta := &metadata.SquashMetadata{
 		Spec:      metadata.SpecVersionV1,
 		Type:      metadata.TypeSquash,
 		Root:      rootShortHash,
 		Base:      baseShortHash,
+		Message:   rootMessage,
 		Children:  childCommits,
 		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05Z07:00"),
 		Strategy:  strategy,

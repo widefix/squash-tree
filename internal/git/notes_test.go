@@ -49,6 +49,12 @@ func TestWriteMetadata_ReadMetadata_RoundTrip(t *testing.T) {
 	if len(meta.Children) != 1 || meta.Children[0].Hash != hash {
 		t.Errorf("Children: %+v", meta.Children)
 	}
+	if meta.Message != "initial" {
+		t.Errorf("Message=%q, want %q", meta.Message, "initial")
+	}
+	if meta.Children[0].Message != "initial" {
+		t.Errorf("Children[0].Message=%q, want %q", meta.Children[0].Message, "initial")
+	}
 }
 
 func TestNotesReader_CommitExists(t *testing.T) {

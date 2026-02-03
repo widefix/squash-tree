@@ -26,6 +26,31 @@ func TestVisualize_SingleLeaf(t *testing.T) {
 	}
 }
 
+func TestVisualize_IncludesCommitMessage(t *testing.T) {
+	node := &Node{
+		Hash:    "abc123",
+		Type:    NodeTypeLeaf,
+		Message: "Add login page",
+		Children: nil,
+	}
+	v := NewVisualizer()
+	out := v.Visualize(node)
+	if !strings.Contains(out, "Add login page") {
+		t.Errorf("output missing commit message: %q", out)
+	}
+	// Squash with message
+	root := &Node{
+		Hash:    "def456",
+		Type:    NodeTypeSquash,
+		Message: "Squash merge feature",
+		Children: []*Node{node},
+	}
+	out = v.Visualize(root)
+	if !strings.Contains(out, "Squash merge feature") {
+		t.Errorf("output missing squash commit message: %q", out)
+	}
+}
+
 func TestVisualize_SquashWithChildren(t *testing.T) {
 	root := &Node{
 		Hash:     "root",

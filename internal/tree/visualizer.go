@@ -39,6 +39,9 @@ func (v *Visualizer) renderNode(builder *strings.Builder, node *Node, prefix str
 	} else {
 		label = fmt.Sprintf("%s [LEAF]", node.Hash)
 	}
+	if node.Message != "" {
+		label = fmt.Sprintf("%s  %s", label, node.Message)
+	}
 
 	builder.WriteString(prefix)
 	builder.WriteString(connector)
@@ -84,12 +87,15 @@ func (v *Visualizer) renderNodeWithDetails(builder *strings.Builder, node *Node,
 
 	var label string
 	if node.IsSquash() && node.Metadata != nil {
-		label = fmt.Sprintf("%s [SQUASH] base:%s strategy:%s", 
-			node.Hash, 
-			node.Metadata.Base, 
+		label = fmt.Sprintf("%s [SQUASH] base:%s strategy:%s",
+			node.Hash,
+			node.Metadata.Base,
 			node.Metadata.Strategy)
 	} else {
 		label = fmt.Sprintf("%s [LEAF]", node.Hash)
+	}
+	if node.Message != "" {
+		label = fmt.Sprintf("%s  %s", label, node.Message)
 	}
 
 	builder.WriteString(prefix)

@@ -40,18 +40,20 @@ func ParseAddMetadataFlags(args []string) (AddMetadataInputs, error) {
 }
 
 type ChildCommit struct {
-	Hash  string `json:"hash"`
-	Order int    `json:"order"`
+	Hash    string `json:"hash"`
+	Order   int    `json:"order"`
+	Message string `json:"message,omitempty"`
 }
 
 type SquashMetadata struct {
-	Spec     string        `json:"spec"`
-	Type     string        `json:"type"`
-	Root     string        `json:"root"`
-	Base     string        `json:"base"`
-	Children []ChildCommit `json:"children"`
-	CreatedAt string       `json:"created_at"`
-	Strategy string        `json:"strategy"`
+	Spec      string        `json:"spec"`
+	Type      string        `json:"type"`
+	Root      string        `json:"root"`
+	Base      string        `json:"base"`
+	Message   string        `json:"message,omitempty"`
+	Children  []ChildCommit `json:"children"`
+	CreatedAt string        `json:"created_at"`
+	Strategy  string        `json:"strategy"`
 }
 
 func Parse(data []byte) (*SquashMetadata, error) {

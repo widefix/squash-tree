@@ -60,6 +60,7 @@ func (b *Builder) buildNode(commitHash string) (*Node, error) {
 			return nil, fmt.Errorf("failed to read metadata for %s: %w", commitHash, err)
 		}
 		node.Metadata = meta
+		node.Message = meta.Message
 
 		children := make([]metadata.ChildCommit, len(meta.Children))
 		copy(children, meta.Children)
@@ -74,6 +75,9 @@ func (b *Builder) buildNode(commitHash string) (*Node, error) {
 			}
 			if b.hasCycle(childNode, commitHash) {
 				return nil, fmt.Errorf("cycle detected: commit %s is part of a cycle", childCommit.Hash)
+			}
+			if childCommit.Message != "" && childNode.Message == "" {
+				childNode.Message = childCommit.Message
 			}
 			node.Children = append(node.Children, childNode)
 		}
