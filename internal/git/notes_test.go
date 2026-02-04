@@ -49,6 +49,12 @@ func TestWriteMetadata_ReadMetadata_RoundTrip(t *testing.T) {
 	if len(meta.Children) != 1 || meta.Children[0].Hash != hash {
 		t.Errorf("Children: %+v", meta.Children)
 	}
+	if meta.Message != "initial" {
+		t.Errorf("Message=%q, want %q", meta.Message, "initial")
+	}
+	if meta.Children[0].Message != "initial" {
+		t.Errorf("Children[0].Message=%q, want %q", meta.Children[0].Message, "initial")
+	}
 }
 
 func TestNotesReader_CommitExists(t *testing.T) {
@@ -107,8 +113,12 @@ func initTempRepo(t *testing.T) (string, func()) {
 
 func makeCommit(t *testing.T, repoPath, msg string) string {
 	t.Helper()
-	// Set user so commit succeeds
-	for _, args := range [][]string{{"git", "config", "user.email", "test@test"}, {"git", "config", "user.name", "Test"}} {
+	// Set user so commit succeeds and disable GPG signing
+	for _, args := range [][]string{
+		{"git", "config", "user.email", "test@test"},
+		{"git", "config", "user.name", "Test"},
+		{"git", "config", "commit.gpgsign", "false"},
+	} {
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Dir = repoPath
 		cmd.Run()

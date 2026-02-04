@@ -90,19 +90,37 @@ func (nr *NotesReader) CommitExists(commitHash string) bool {
 	return err == nil
 }
 
+func getCommitMessage(repoPath, ref string) (string, error) {
+	cmd := exec.Command("git", "log", "-1", "--format=%s", ref)
+	if repoPath != "" {
+		cmd.Dir = repoPath
+	}
+	output, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("git log: %w", err)
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
 func WriteMetadata(repoPath, rootShortHash, baseShortHash string, children []string, strategy string) error {
 	if len(children) == 0 {
 		return fmt.Errorf("at least one child commit required")
 	}
+
+	rootMessage, _ := getCommitMessage(repoPath, rootShortHash)
+
 	childCommits := make([]metadata.ChildCommit, len(children))
 	for i, h := range children {
-		childCommits[i] = metadata.ChildCommit{Hash: h, Order: i + 1}
+		msg, _ := getCommitMessage(repoPath, h)
+		childCommits[i] = metadata.ChildCommit{Hash: h, Order: i + 1, Message: msg}
 	}
+
 	meta := &metadata.SquashMetadata{
 		Spec:      metadata.SpecVersionV1,
 		Type:      metadata.TypeSquash,
 		Root:      rootShortHash,
 		Base:      baseShortHash,
+		Message:   rootMessage,
 		Children:  childCommits,
 		CreatedAt: time.Now().UTC().Format("2006-01-02T15:04:05Z07:00"),
 		Strategy:  strategy,
@@ -117,5 +135,22 @@ func WriteMetadata(repoPath, rootShortHash, baseShortHash string, children []str
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("git notes add: %w: %s", err, string(out))
 	}
+
+	rootFull, err := FullHash(repoPath, rootShortHash)
+	if err != nil {
+		return fmt.Errorf("resolve root full hash: %w", err)
+	}
+	childFulls := make([]string, len(children))
+	for i, c := range children {
+		full, err := FullHash(repoPath, c)
+		if err != nil {
+			return fmt.Errorf("resolve child %s full hash: %w", c, err)
+		}
+		childFulls[i] = full
+	}
+	if err := CreatePreservationRefs(repoPath, rootFull, childFulls); err != nil {
+		return fmt.Errorf("create preservation refs: %w", err)
+	}
+
 	return nil
 }

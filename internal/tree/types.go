@@ -12,6 +12,7 @@ const (
 type Node struct {
 	Hash     string
 	Type     NodeType
+	Message  string
 	Metadata *metadata.SquashMetadata
 	Children []*Node
 	Visited  bool
