@@ -57,8 +57,22 @@ else
   INSTALL_DIR="$HOME/bin"
   mkdir -p "$INSTALL_DIR"
   if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-    echo "Note: Add $INSTALL_DIR to your PATH:"
-    echo "  export PATH=\"\$HOME/bin:\$PATH\"   # add to .zshrc or .bashrc"
+    PATH_LINE='export PATH="$HOME/bin:$PATH"'
+    for rc in .zshrc .bashrc; do
+      rcfile="$HOME/$rc"
+      if [ -f "$rcfile" ]; then
+        if ! grep -qF "$HOME/bin" "$rcfile" 2>/dev/null; then
+          echo "" >> "$rcfile"
+          echo "# squash-tree" >> "$rcfile"
+          echo "$PATH_LINE" >> "$rcfile"
+          echo "Added $INSTALL_DIR to PATH in $rc"
+        fi
+      else
+        echo "$PATH_LINE" >> "$rcfile"
+        echo "Created $rc with PATH entry"
+      fi
+    done
+    echo "Run 'source ~/.zshrc' or 'source ~/.bashrc' (or open a new terminal) to use git-squash-tree."
   fi
 fi
 
