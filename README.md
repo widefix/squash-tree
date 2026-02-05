@@ -9,6 +9,22 @@ Git intentionally discards history during squash operations.
 
 ---
 
+## Install
+
+**macOS / Linux (one command):**
+
+```bash
+curl -sSL https://raw.githubusercontent.com/widefix/squash-tree/main/scripts/install.sh | bash
+```
+
+Then run `git squash-tree init` (or `git squash-tree init --global`) in a repository.
+
+To pin a version: `curl -sSL ... | bash -s -- v0.1.0`
+
+**Other options:** [Download a pre-built binary](https://github.com/widefix/squash-tree/releases) for your platform, or [build from source](INSTALL.md). Full setup (Windows, Git alias, hooks) is in [INSTALL.md](docs/install.md).
+
+---
+
 ## Motivation
 
 Git squash workflows (`merge --squash`, interactive rebase, GitHub squash merges) permanently collapse commit history.
